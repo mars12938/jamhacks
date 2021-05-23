@@ -1,0 +1,227 @@
+import pygame
+import random
+import time
+
+pygame.init()
+
+#Creating the screen dimensions
+screenWidth = 500
+screenHeight = 500
+
+score = 0
+
+tele1x = random.randrange(20, 480)
+tele1y = random.randrange(20, 480)
+tele2x = random.randrange(20, 480)
+tele2y = random.randrange(20, 480)
+
+#displays the srceen
+screen = pygame.display.set_mode((screenWidth, screenHeight))
+#tab
+pygame.display.set_caption('Hackathon Project')
+
+#colours
+white = (255, 255, 255)
+green = (34, 139, 34)
+red = (255, 0, 0)
+blue = (0, 0, 255)
+yellow = (255, 255, 0)
+
+snakeBlock = 20  #Size of snake blocks
+
+#Change in x and y position to update every tick
+dx1 = 0
+dy1 = 0
+dspeed = 3
+
+#game speed or time?
+clock = pygame.time.Clock()
+
+#fonts
+font_style = pygame.font.SysFont(None, 50)
+font_score = pygame.font.SysFont(None, 30)
+
+
+#function to define list of snake blocks to draw
+def our_snake(snake_block, snake_list):
+    for x in snake_list:
+        pygame.draw.rect(screen, green, [x[0], x[1], snake_block, snake_block])
+
+
+#function for any messages that pop up
+def message(msg, colour):
+    mesg = font_style.render(msg, True, colour)
+    screen.blit(mesg, [100, 190])
+
+
+#function for defining the score
+def thescore(score, color):
+    scr = font_score.render('Score = ' + str(score), True, color)
+    screen.blit(scr, [370, 10])
+
+def teleporters():
+  pygame.draw.rect(screen, blue, [tele1x, tele1y, 26, 26])
+  pygame.draw.rect(screen, blue, [tele2x, tele2y, 26, 26])
+  
+  #main function
+def gameloop():
+    #game is not over and not closed
+    game_close = False
+    quitout = False
+
+    #initial X and Y position of snake head
+    x1 = screenWidth / 2
+    y1 = screenHeight / 2
+
+    #change in x, y position
+    dx1 = 0
+    dy1 = 0
+
+    snake_List = []
+    Length_of_snake = 1
+
+    #random coordinates for food
+    foodx = round(random.randrange(0, screenWidth - snakeBlock))
+    foody = round(random.randrange(0, screenHeight - snakeBlock))
+
+    enemyX = round(random.randrange(0, screenWidth - snakeBlock))
+    enemyY = round(random.randrange(0, screenHeight - snakeBlock))
+
+    #while game is running
+    while quitout == False:
+
+        #basically when game is over
+        while game_close == True:
+            screen.fill(white)
+            message("You lost. Game Over!", red)
+            pygame.display.update()
+
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_q:
+                        quitout = True
+                        game_close = False
+                    if event.key == pygame.K_c:
+                        gameloop()
+                        for event in pygame.event.get():
+            #if event is not working so to speak, means the game is over
+            if event.type == pygame.QUIT:
+                quitout = True
+                #break out of for loop
+                break
+            if event.type == pygame.KEYDOWN:  #if a key is pressed
+                if event.key == pygame.K_LEFT:  #left
+                    dx1 = -dspeed
+                    dy1 = 0
+                    tnegx = False
+                    tposx = True
+                    tnegy = False
+                    tposy = False
+                elif event.key == pygame.K_RIGHT:  #right
+                    dx1 = dspeed
+                    dy1 = 0
+                    tnegx = True
+                    tposx = False
+                    tposy = False
+                    tnegy = False
+                elif event.key == pygame.K_UP:  #up
+                    dy1 = -dspeed
+                    dx1 = 0
+                    tnegy = False
+                    tposy = True
+                    tposx = False
+                    tnegx = False
+                elif event.key == pygame.K_DOWN:  #down
+                    dy1 = dspeed
+                    dx1 = 0
+                    tnegy = True
+                    tnegx = False 
+                    tposx = False
+                    tposy = False
+            print(event)
+            #teleporter 1
+        #for teleportes pls leave it here
+        if (tele1x-13)<(x1+5) and (tele1x+13)>(x1-5) and (tele1y-13)<(y1+5) and (tele1y+13)>(y1-5):
+          if tposx == True:
+            x1 = tele2x - 20
+            y1 = tele2y
+          if tposy == True:
+            y1 = tele2y - 20
+            x1 = tele2x
+          if tnegx == True:
+            x1 = tele2x + 20
+            y1 = tele2y
+          if tnegy == True:
+            x1 = tele2x 
+            y1 = tele2y + 20
+
+        #teleporter 2
+        if (tele2x-13)<(x1+5) and (tele2x+13)>(x1-5) and (tele2y-13)<(y1+5) and (tele2y+13)>(y1-5):
+          if tposx == True:
+            x1 = tele1x - 20
+            y1 = tele1y
+          if tposy == True:
+            y1 = tele1y - 20
+            x1 = tele1x
+          if tnegx == True:
+            x1 = tele1x + 20
+            y1 = tele1y
+          if tnegy == True:
+            x1 = tele1x 
+            y1 = tele1y + 20
+
+        #initial x/y coordinates added to change in coordinates
+        x1 += dx1
+        y1 += dy1
+
+        snake_Head = []
+        snake_Head.append(x1)
+        snake_Head.append(y1)
+        snake_List.append(snake_Head)
+
+        if len(snake_List) > Length_of_snake:
+            del snake_List[0]
+
+        for x in snake_List[:-1]:
+            if x == snake_Head:
+                game_close = True
+
+        #if snake out of bounds, game is over
+        if x1 >= screenWidth or x1 < 0 or y1 >= screenHeight or y1 < 0:
+            game_close = True
+
+        screen.fill(white)
+        our_snake(snakeBlock, snake_List)
+
+        #food generator
+        pygame.draw.rect(screen, red, [foodx, foody, snakeBlock, snakeBlock])
+
+        #obstacle generator
+        pygame.draw.rect(screen, yellow, [enemyX, enemyY, snakeBlock, snakeBlock])
+        if abs(x1 - enemyX) <= snakeBlock and abs(y1 - enemyY) <= snakeBlock:
+          game_close = True
+
+        #the score
+        thescore(((Length_of_snake - 1) * 10), blue)
+teleporters()
+
+        pygame.display.update()
+
+        if abs(x1 - foodx) <= snakeBlock and abs(y1 - foody) <= snakeBlock:
+            foodx = round(random.randrange(0, screenWidth - snakeBlock))
+            foody = round(random.randrange(0, screenHeight - snakeBlock))
+
+            enemyX = round(random.randrange(0, screenWidth - snakeBlock))
+            enemyY = round(random.randrange(0, screenHeight - snakeBlock))
+
+            print('Food')
+            Length_of_snake += 5
+
+        clock.tick(60)
+
+    pygame.quit()
+    quit()
+
+
+gameloop()
+                        
